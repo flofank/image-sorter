@@ -1,0 +1,12 @@
+target/image-sorter-1.0-SNAPSHOT.jar
+target/classes/log4j2.xml
+target/classes/ch/fanki/App.class
+target/maven-archiver/pom.properties
+target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst
+target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
+target/surefire-reports/2023-09-29T17-53-04_174.dumpstream
+target/surefire-reports/ch.fanki.AppTest.txt
+target/surefire-reports/TEST-ch.fanki.AppTest.xml
+target/test-classes/ch/fanki/AppTest.class
