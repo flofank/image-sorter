@@ -3,13 +3,11 @@ package ch.fanki;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Locale;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.imaging.ImageReadException;
 import org.apache.commons.imaging.Imaging;
@@ -29,7 +27,9 @@ public class App
 {
     private static final Logger LOG = LoggerFactory.getLogger(App.class);
     private static final DateTimeFormatter DTF_METADATA = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
-    private static final SimpleDateFormat SDF_METADATA = new SimpleDateFormat("YYYY:MM:DD hh:mm:ss", Locale.GERMAN);
+    private static final List<RegexDateExtractor> REGEX_EXTRACTORS = List.of(
+        new RegexDateExtractor("PHOTO-(\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}).*", "yyyy-MM-dd-HH-mm-ss")
+    );
 
     public static void main( String[] args ) throws IOException
     {
@@ -52,6 +52,9 @@ public class App
     private static void handlePicture(Path picture, Path outputDirectory) throws ImageReadException, IOException {
         LOG.debug("Handling {}", picture.getFileName());
         LocalDateTime originalDate = getDateFromMetadata(picture);
+        if (originalDate == null) {
+           originalDate = getDateFromFileName(picture);
+        }
         if (originalDate == null) {
             LOG.info("Failed to handle {}", picture, originalDate);
         }
@@ -82,5 +85,35 @@ public class App
        
 
         return originalDate;
+    }
+    
+    private static LocalDateTime getDateFromFileName(Path picture) {
+        for (RegexDateExtractor extractor : REGEX_EXTRACTORS) {
+            LocalDateTime date = extractor.extractDate(picture.getFileName().toString());
+            if (date != null) {
+                return date;
+            }
+        }
+        return null;
+    }
+
+    public static class RegexDateExtractor {
+        private DateTimeFormatter dateTimeFormatter;
+        private Pattern fileNamePattern;
+
+        public RegexDateExtractor(String fileNamePattern, String dateTimePattern) {
+            dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern);
+            this.fileNamePattern = Pattern.compile(fileNamePattern);
+        }
+
+        public LocalDateTime extractDate(String fileName) {
+            Matcher m = fileNamePattern.matcher(fileName);
+            if (m.matches()) {
+                try {
+                    return LocalDateTime.parse(m.group(1), dateTimeFormatter);
+                } catch (Exception e) {}
+            }
+            return null;
+        }
     }
 }
