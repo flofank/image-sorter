@@ -1,6 +1,7 @@
 package ch.fanki;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -19,22 +20,20 @@ import org.apache.commons.imaging.formats.tiff.constants.ExifTagConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Hello world!
- *
- */
-public class App 
+public class ImageSorter 
 {
-    private static final Logger LOG = LoggerFactory.getLogger(App.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ImageSorter.class);
     private static final DateTimeFormatter DTF_METADATA = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
+    private static final DateTimeFormatter DTF_FILE_PREFIX = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final List<RegexDateExtractor> REGEX_EXTRACTORS = List.of(
         new RegexDateExtractor("PHOTO-(\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}).*", "yyyy-MM-dd-HH-mm-ss")
     );
 
     public static void main( String[] args ) throws IOException
     {
-        Path inputDir = Path.of("D:\\Fotos\\Family\\2023\\Icoming");
-        Path outputDir = Path.of("D:\\Fotos\\Family\\2023\\Sorted");
+        Path inputDir = Path.of(args[0]);
+        Path outputDir = Path.of(args[1]);
+        
 
         LOG.info("Sorting files from {} to {}", inputDir, outputDir);
         Files.walk(inputDir).forEach(p -> {
@@ -55,10 +54,23 @@ public class App
         if (originalDate == null) {
            originalDate = getDateFromFileName(picture);
         }
-        if (originalDate == null) {
-            LOG.info("Failed to handle {}", picture, originalDate);
+        if (originalDate != null) {
+            movePicture(picture, outputDirectory, originalDate);
+        } else {
+            LOG.error("Failed to handle {}", picture, originalDate);
         }
-        LOG.info("Extracted date [{}] from {}", originalDate, picture.getFileName());
+    }
+
+    private static void movePicture(Path picture, Path outputDirectory, LocalDateTime originalDate) {
+        Path targetPath = outputDirectory.resolve(DTF_FILE_PREFIX.format(originalDate) + "_" + picture.getFileName().toString());
+        LOG.info("Moving {} to [{}]", picture.getFileName(), targetPath);
+        try {
+            Files.move(picture, targetPath);
+        } catch (FileAlreadyExistsException ex) {
+            LOG.warn("Skipped [{}]. File [{}] already exists", picture.getFileName().toString(), targetPath);
+        } catch (IOException e) {
+            LOG.error("Failure moving picture", e);
+        }
     }
 
     private static LocalDateTime getDateFromMetadata(Path picture) throws ImageReadException, IOException {
