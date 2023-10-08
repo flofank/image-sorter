@@ -4,7 +4,7 @@
   <groupId>ch.fanki</groupId>
   <artifactId>image-sorter</artifactId>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.1</version>
   <name>image-sorter</name>
   <url>http://maven.apache.org</url>
 

@@ -6,6 +6,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,7 +28,15 @@ public class ImageSorter
     private static final DateTimeFormatter DTF_METADATA = DateTimeFormatter.ofPattern("yyyy:MM:dd HH:mm:ss");
     private static final DateTimeFormatter DTF_FILE_PREFIX = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final List<RegexDateExtractor> REGEX_EXTRACTORS = List.of(
-        new RegexDateExtractor("PHOTO-(\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}).*", "yyyy-MM-dd-HH-mm-ss")
+        new RegexDateExtractor("PHOTO-(\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}).*", DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss")),
+        new RegexDateExtractor("threema-(\\d{8}-\\d{9}).*", DateTimeFormatter.ofPattern("yyyyMMdd-HHmmssSSS")),
+        new RegexDateExtractor("image-(\\d{8}-\\d{6}).*", DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")),
+        new RegexDateExtractor("IMG-(\\d{8})-WA.*", new DateTimeFormatterBuilder()
+        .appendPattern("yyyyMMdd")
+        .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+        .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+        .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+        .toFormatter())
     );
 
     public static void main( String[] args ) throws IOException
@@ -113,8 +123,8 @@ public class ImageSorter
         private DateTimeFormatter dateTimeFormatter;
         private Pattern fileNamePattern;
 
-        public RegexDateExtractor(String fileNamePattern, String dateTimePattern) {
-            dateTimeFormatter = DateTimeFormatter.ofPattern(dateTimePattern);
+        public RegexDateExtractor(String fileNamePattern, DateTimeFormatter dateTimeFormatter) {
+            this.dateTimeFormatter = dateTimeFormatter;
             this.fileNamePattern = Pattern.compile(fileNamePattern);
         }
 

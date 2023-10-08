@@ -10,3 +10,8 @@ target/surefire-reports/2023-09-29T17-53-04_174.dumpstream
 target/surefire-reports/ch.fanki.AppTest.txt
 target/surefire-reports/TEST-ch.fanki.AppTest.xml
 target/test-classes/ch/fanki/AppTest.class
+target/archive-tmp/image-sorter-1.1.jar
+target/classes/ch/fanki/App$RegexDateExtractor.class
+target/classes/ch/fanki/ImageSorter.class
+target/classes/ch/fanki/ImageSorter$RegexDateExtractor.class
+target/surefire-reports/2023-10-08T21-31-58_772.dumpstream
